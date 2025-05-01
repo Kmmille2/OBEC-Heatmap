@@ -47,7 +47,7 @@
         const pinColor = '#932913';
         const circleClr = 'rgba(167,154,248,1)'; // Use full opacity in base color, control via layer opacity
 
-        /* Service hubs - Radii are now defined by multipliers below */
+        /* Service hubs - Base radius 'r' used with multipliers below */
         const points = [
             { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50, w: 1 }, // r is base radius in miles (50)
             { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50, w: 1 },
@@ -74,7 +74,7 @@
             container: 'map',
             style: 'mapbox://styles/mapbox/standard',
             center: [-76.5, 38.5],
-            zoom: 5,
+            zoom: 5, // You might want to increase this slightly if using smaller radii overall
             attributionControl: false
         });
 
@@ -105,7 +105,6 @@
                     .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n))
                     .addTo(map);
 
-                // Add a separate source for each point's circles (using the same source for all layers of that point)
                 map.addSource(p.n + '-c', {
                     type: 'geojson',
                     data: {
@@ -117,46 +116,45 @@
                     }
                 });
 
-                // --- START: Layered Circles ---
-                // Layers added later are drawn on top. Add outer (most transparent) first.
+                // --- START: Layered Circles with smaller radii for testing ---
 
-                // 1. Outer Circle (Largest radius, lowest opacity)
+                // 1. Outer Circle (50 miles, lowest opacity)
                 map.addLayer({
-                    id: p.n + '-cL-outer', // Unique ID
-                    type: 'circle',
-                    source: p.n + '-c', // Use the point's source
-                    paint: {
-                        'circle-radius': p.r * 1609.34 * 4, // 200 miles (50 * 4)
-                        'circle-color': circleClr,
-                        'circle-stroke-color': pinColor, // Optional: Maybe only stroke the outermost?
-                        'circle-stroke-width': 1,        // Optional: Set to 0 for inner circles if desired
-                        'circle-opacity': 0.30  // Low opacity
-                    }
-                });
-
-                // 2. Middle Circle (Medium radius, medium opacity)
-                map.addLayer({
-                    id: p.n + '-cL-middle', // Unique ID
+                    id: p.n + '-cL-outer',
                     type: 'circle',
                     source: p.n + '-c',
                     paint: {
-                        'circle-radius': p.r * 1609.34 * 2, // 100 miles (50 * 2)
+                        'circle-radius': p.r * 1609.34 * 1, // CHANGE: Multiplier is 1 (50 miles)
                         'circle-color': circleClr,
-                        'circle-stroke-width': 0, // No stroke for inner circles usually looks better
-                        'circle-opacity': 0.55 // Medium opacity (higher than outer)
+                        'circle-stroke-color': pinColor,
+                        'circle-stroke-width': 1,
+                        'circle-opacity': 0.15  // CHANGE: Adjusted opacity
                     }
                 });
 
-                // 3. Inner Circle (Base radius, highest opacity)
+                // 2. Middle Circle (25 miles, medium opacity)
                 map.addLayer({
-                    id: p.n + '-cL-inner', // Unique ID
+                    id: p.n + '-cL-middle',
                     type: 'circle',
                     source: p.n + '-c',
                     paint: {
-                        'circle-radius': p.r * 1609.34 * 1, // 50 miles (base radius)
+                        'circle-radius': p.r * 1609.34 * 0.5, // CHANGE: Multiplier is 0.5 (25 miles)
                         'circle-color': circleClr,
-                        'circle-stroke-width': 0, // No stroke
-                        'circle-opacity': 0.80 // High opacity (higher than middle)
+                        'circle-stroke-width': 0,
+                        'circle-opacity': 0.35 // CHANGE: Adjusted opacity
+                    }
+                });
+
+                // 3. Inner Circle (10 miles, highest opacity)
+                map.addLayer({
+                    id: p.n + '-cL-inner',
+                    type: 'circle',
+                    source: p.n + '-c',
+                    paint: {
+                        'circle-radius': p.r * 1609.34 * 0.2, // CHANGE: Multiplier is 0.2 (10 miles)
+                        'circle-color': circleClr,
+                        'circle-stroke-width': 0,
+                        'circle-opacity': 0.60 // CHANGE: Adjusted opacity
                     }
                 });
                 // --- END: Layered Circles ---
