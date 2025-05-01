@@ -126,11 +126,11 @@
                     type: 'circle',
                     source: p.n + '-c', // Use the point's source
                     paint: {
-                        'circle-radius': p.r * 1609.34 * 40, // 200 miles (50 * 4)
+                        'circle-radius': p.r * 1609.34 * 20, // 200 miles (50 * 4)
                         'circle-color': circleClr,
                         'circle-stroke-color': pinColor, // Optional: Maybe only stroke the outermost?
                         'circle-stroke-width': 1,        // Optional: Set to 0 for inner circles if desired
-                        'circle-opacity': 0.30  // Low opacity
+                        'circle-opacity': 0.25  // Low opacity
                     }
                 });
 
@@ -140,10 +140,10 @@
                     type: 'circle',
                     source: p.n + '-c',
                     paint: {
-                        'circle-radius': p.r * 1609.34 * 20, // 100 miles (50 * 2)
+                        'circle-radius': p.r * 1609.34 * 10, // 100 miles (50 * 2)
                         'circle-color': circleClr,
                         'circle-stroke-width': 0, // No stroke for inner circles usually looks better
-                        'circle-opacity': 0.55 // Medium opacity (higher than outer)
+                        'circle-opacity': 0.50 // Medium opacity (higher than outer)
                     }
                 });
 
@@ -153,10 +153,10 @@
                     type: 'circle',
                     source: p.n + '-c',
                     paint: {
-                        'circle-radius': p.r * 1609.34 * 10, // 50 miles (base radius)
+                        'circle-radius': p.r * 1609.34 * 5, // 50 miles (base radius)
                         'circle-color': circleClr,
                         'circle-stroke-width': 0, // No stroke
-                        'circle-opacity': 0.80 // High opacity (higher than middle)
+                        'circle-opacity': 0.70 // High opacity (higher than middle)
                     }
                 });
                 // --- END: Layered Circles ---
