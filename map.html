@@ -1,75 +1,149 @@
-<!DOCTYPE html><html lang="en"><head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>OBEC Coverage Map</title>
-<style>html,body,#map{margin:0;height:100%;width:100%}</style>
+<!DOCTYPE html>
+<html lang="en">
 
-<!-- Mapbox-GL assets from jsDelivr CDN (NO spaces) -->
-<link  href="https://cdn.jsdelivr.net/npm/mapbox-gl@2.16.0/dist/mapbox-gl.css"  rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/mapbox-gl@2.16.0/dist/mapbox-gl.js"></script>
-</head><body>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>OBEC Coverage Map</title>
+    <style>
+        html,
+        body,
+        #map {
+            margin: 0;
+            height: 100%;
+            width: 100%;
+        }
+    </style>
 
-<div id="map"></div>
+    <link href="https://cdn.jsdelivr.net/npm/mapbox-gl@2.16.0/dist/mapbox-gl.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mapbox-gl@2.16.0/dist/mapbox-gl.js"></script>
+</head>
 
-<script>
-/* Wix / CSP worker fix */
-mapboxgl.workerUrl   = 'https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl-csp-worker.js';
-mapboxgl.workerCount = 2;
+<body>
 
-/* Public token */
-mapboxgl.accessToken =
-  'pk.eyJ1Ijoia3lsZS1taWxsZXIiLCJhIjoiY21hNWVya2RzMGlycjJpbzl4OW1kaGtodiJ9.u5I5rSYZSB1pqdX7rjudQw';
+    <div id="map"></div>
 
-/* Heatmap colours */
-const heatGradient = [
-  'interpolate',['linear'],['heatmap-density'],
-  0,'rgba(167,154,248,0)',
-  .3,'rgba(167,154,248,.5)',
-  .6,'rgba(147,41,19,.7)',
-  1,'rgba(147,41,19,.9)'
-];
-const pinColor='#932913', circleClr='rgba(167,154,248,.18)';
+    <script>
+        /* Wix / CSP worker fix */
+        mapboxgl.workerUrl = 'https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl-csp-worker.js';
+        mapboxgl.workerCount = 2;
 
-/* Service hubs */
-const points=[
-  {n:'East Windsor NJ',lat:40.267,lng:-74.525,r:50,w:1},
-  {n:'New Castle DE',  lat:39.687,lng:-75.586,r:50,w:1},
-  {n:'Wake Forest NC', lat:35.979,lng:-78.507,r:50,w:1}
-];
-const feat={type:'FeatureCollection',features:points.map(p=>({
-  type:'Feature',geometry:{type:'Point',coordinates:[p.lng,p.lat]},properties:{weight:p.w}
-}))};
+        /* Public token */
+        mapboxgl.accessToken =
+            'pk.eyJ1Ijoia3lsZS1taWxsZXIiLCJhIjoiY21hNWVya2RzMGlycjJpbzl4OW1kaGtodiJ9.u5I5rSYZSB1pqdX7rjudQw';
 
-/* Build the map */
-const map=new mapboxgl.Map({
-  container:'map',
-  style:'mapbox://styles/mapbox/light-v11',
-  center:[-76.5,38.5],
-  zoom:5,
-  attributionControl:false
-});
-map.on('load',()=>{
-  map.addSource('hubs',{type:'geojson',data:feat});
-  map.addLayer({id:'heat',type:'heatmap',source:'hubs',maxzoom:9,paint:{
-    'heatmap-weight':['get','weight'],
-    'heatmap-color':heatGradient,
-    'heatmap-radius':60,
-    'heatmap-opacity':.8
-  }});
-  points.forEach(p=>{
-    new mapboxgl.Marker({color:pinColor})
-      .setLngLat([p.lng,p.lat])
-      .setPopup(new mapboxgl.Popup({offset:25}).setText(p.n))
-      .addTo(map);
-    map.addSource(p.n+'-c',{type:'geojson',
-      data:{type:'Feature',geometry:{type:'Point',coordinates:[p.lng,p.lat]}}});
-    map.addLayer({id:p.n+'-cL',type:'circle',source:p.n+'-c',paint:{
-      'circle-radius':{stops:[[0,0],[20,p.r*1609/2]],base:2},
-      'circle-color':circleClr,
-      'circle-stroke-color':pinColor,
-      'circle-stroke-width':1
-    }});
-  });
-});
-</script>
-</body></html>
+        /* Heatmap colours */
+        const heatGradient = [
+            'interpolate', ['linear'], ['heatmap-density'],
+            0, 'rgba(167,154,248,0)',    // transparent lavender
+            0.3, 'rgba(167,154,248,0.5)', // semi-transparent lavender
+            0.6, 'rgba(147,41,19,0.7)',   // semi-transparent rust
+            1, 'rgba(147,41,19,0.9)'     // mostly opaque rust
+        ];
+        const pinColor = '#932913'; // Rust color for pins and circle strokes
+        const circleClr = 'rgba(167,154,248,0.18)'; // Light lavender fill for circles
+
+        /* Service hubs */
+        const points = [
+            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50, w: 1 },
+            { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50, w: 1 },
+            { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 50, w: 1 }
+        ];
+
+        // Convert points array to GeoJSON FeatureCollection for Mapbox sources
+        const feat = {
+            type: 'FeatureCollection',
+            features: points.map(p => ({
+                type: 'Feature',
+                geometry: {
+                    type: 'Point',
+                    coordinates: [p.lng, p.lat]
+                },
+                properties: {
+                    weight: p.w
+                }
+            }))
+        };
+
+        /* Build the map */
+        const map = new mapboxgl.Map({
+            container: 'map',                       // ID of the div element
+            style: 'mapbox://styles/mapbox/light-v11', // Base map style
+            center: [-76.5, 38.5],                  // Initial center [lng, lat]
+            zoom: 5,                                // Initial zoom level
+            attributionControl: false               // Hide default attribution
+        });
+
+        map.on('load', () => {
+            // Add the GeoJSON source for heatmap
+            map.addSource('hubs', {
+                type: 'geojson',
+                data: feat
+            });
+
+            // Add the heatmap layer
+            map.addLayer({
+                id: 'heat',
+                type: 'heatmap',
+                source: 'hubs',
+                maxzoom: 9, // Hide heatmap when zoomed in closely
+                paint: {
+                    // Use the 'weight' property from GeoJSON for heatmap intensity
+                    'heatmap-weight': ['get', 'weight'],
+                    // Define the color gradient for the heatmap
+                    'heatmap-color': heatGradient,
+                    // Radius of influence for each point in pixels
+                    'heatmap-radius': 60,
+                    // Opacity of the heatmap layer
+                    'heatmap-opacity': 0.8
+                }
+            });
+
+            // Add markers and circles for each service hub
+            points.forEach(p => {
+                // Add a marker for the hub location
+                new mapboxgl.Marker({ color: pinColor })
+                    .setLngLat([p.lng, p.lat])
+                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n)) // Show name on click
+                    .addTo(map);
+
+                // Add a separate source for each circle (needed for individual radius control)
+                map.addSource(p.n + '-c', {
+                    type: 'geojson',
+                    data: {
+                        type: 'Feature',
+                        geometry: {
+                            type: 'Point',
+                            coordinates: [p.lng, p.lat]
+                        }
+                    }
+                });
+
+                // Add the circle layer for the service radius
+                map.addLayer({
+                    id: p.n + '-cL',
+                    type: 'circle',
+                    source: p.n + '-c',
+                    paint: {
+                        // Calculate circle radius in meters based on zoom level
+                        // p.r is radius in miles, converted to meters (* 1609)
+                        // /2 because Mapbox 'circle-radius' behaves more like diameter visually for large radii
+                        'circle-radius': {
+                            stops: [
+                                [0, 0], // Radius at zoom 0
+                                [20, p.r * 1609 / 2] // Radius at zoom 20 (max radius in meters)
+                            ],
+                            base: 2 // Interpolation base
+                        },
+                        'circle-color': circleClr,
+                        'circle-stroke-color': pinColor,
+                        'circle-stroke-width': 1
+                    }
+                });
+            });
+        });
+    </script>
+
+</body>
+
+</html>
