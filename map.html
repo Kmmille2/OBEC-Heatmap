@@ -25,8 +25,8 @@
     <div id="map"></div>
 
     <script>
-        /* Wix / CSP worker fix - Use URL matching the library version */
-        mapboxgl.workerUrl = 'https://api.mapbox.com/mapbox-gl-js/v3.11.1/mapbox-gl-csp-worker.js';
+        /* Wix / CSP worker fix - Point to LOCAL worker file */
+        mapboxgl.workerUrl = 'mapbox-gl-csp-worker.js'; // Point to the local file
         mapboxgl.workerCount = 2; // You might adjust this based on performance needs
 
         /* Public token */
@@ -99,7 +99,7 @@
                     'heatmap-radius': 60, // Adjust radius as needed
                     'heatmap-opacity': 0.8
                 }
-            }); // Removed }, { before: 'waterway-label' }); // Removed placement relative to standard style
+            }); // Removed placement relative to standard style
 
             // Add markers and circles for each service hub
             points.forEach(p => {
@@ -135,7 +135,7 @@
                         'circle-stroke-width': 1,
                         'circle-opacity': 0.5 // Added opacity for better visibility if circles overlap
                     }
-                }); // Removed }, { before: 'waterway-label' }); // Removed placement relative to standard style
+                }); // Removed placement relative to standard style
             });
 
             // ---- Notes for Mapbox v3 ----
