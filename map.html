@@ -13,7 +13,6 @@
             height: 100%;
             width: 100%;
         }
-        /* Optional: Style the navigation control if needed */
         .mapboxgl-ctrl-top-right {
             margin: 10px;
         }
@@ -30,7 +29,7 @@
 
     <script>
         /* Wix / CSP worker fix - Point to LOCAL worker file */
-        mapboxgl.workerUrl = 'mapbox-gl-csp-worker.js'; // Point to the local file
+        mapboxgl.workerUrl = 'mapbox-gl-csp-worker.js';
         mapboxgl.workerCount = 2;
 
         /* Public token */
@@ -40,19 +39,17 @@
         /* Heatmap colours */
         const heatGradient = [
             'interpolate', ['linear'], ['heatmap-density'],
-            0, 'rgba(167,154,248,0)',    // transparent lavender
-            0.3, 'rgba(167,154,248,0.5)', // semi-transparent lavender
-            0.6, 'rgba(147,41,19,0.7)',   // semi-transparent rust
-            1, 'rgba(147,41,19,0.9)'     // mostly opaque rust
+            0, 'rgba(167,154,248,0)',
+            0.3, 'rgba(167,154,248,0.5)',
+            0.6, 'rgba(147,41,19,0.7)',
+            1, 'rgba(147,41,19,0.9)'
         ];
-        const pinColor = '#932913'; // Rust color for pins and circle strokes
-        // Note: circleClr alpha value is less important now we use circle-opacity below
-        const circleClr = 'rgba(167,154,248,0.18)';
+        const pinColor = '#932913';
+        const circleClr = 'rgba(167,154,248,1)'; // Use full opacity in base color, control via layer opacity
 
-        /* Service hubs */
+        /* Service hubs - Radii are now defined by multipliers below */
         const points = [
-             // CHANGE: Adjusted radius multiplier in circle layer below
-            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50, w: 1 },
+            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50, w: 1 }, // r is base radius in miles (50)
             { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50, w: 1 },
             { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 50, w: 1 }
         ];
@@ -67,7 +64,7 @@
                     coordinates: [p.lng, p.lat]
                 },
                 properties: {
-                    weight: p.w // Used for heatmap intensity
+                    weight: p.w
                 }
             }))
         };
@@ -75,26 +72,20 @@
         /* Build the map */
         const map = new mapboxgl.Map({
             container: 'map',
-            style: 'mapbox://styles/mapbox/standard', // Using Standard style
+            style: 'mapbox://styles/mapbox/standard',
             center: [-76.5, 38.5],
             zoom: 5,
-            attributionControl: false // Keep default attribution hidden
+            attributionControl: false
         });
 
-        // Optional: Add standard Mapbox attribution control if needed later
-        // map.addControl(new mapboxgl.AttributionControl({ compact: true }));
-
-        // CHANGE: Add zoom and rotation controls to the map.
         map.addControl(new mapboxgl.NavigationControl());
 
         map.on('load', () => {
-            // Add the GeoJSON source for heatmap
             map.addSource('hubs', {
                 type: 'geojson',
                 data: feat
             });
 
-            // Add the heatmap layer
             map.addLayer({
                 id: 'heat',
                 type: 'heatmap',
@@ -108,15 +99,13 @@
                 }
             });
 
-            // Add markers and circles for each service hub
             points.forEach(p => {
-                // Add a marker for the hub location
                 new mapboxgl.Marker({ color: pinColor })
                     .setLngLat([p.lng, p.lat])
                     .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n))
                     .addTo(map);
 
-                // Add a separate source for each circle
+                // Add a separate source for each point's circles (using the same source for all layers of that point)
                 map.addSource(p.n + '-c', {
                     type: 'geojson',
                     data: {
@@ -128,21 +117,50 @@
                     }
                 });
 
-                // Add the circle layer for the service radius
+                // --- START: Layered Circles ---
+                // Layers added later are drawn on top. Add outer (most transparent) first.
+
+                // 1. Outer Circle (Largest radius, lowest opacity)
                 map.addLayer({
-                    id: p.n + '-cL',
+                    id: p.n + '-cL-outer', // Unique ID
+                    type: 'circle',
+                    source: p.n + '-c', // Use the point's source
+                    paint: {
+                        'circle-radius': p.r * 1609.34 * 40, // 200 miles (50 * 4)
+                        'circle-color': circleClr,
+                        'circle-stroke-color': pinColor, // Optional: Maybe only stroke the outermost?
+                        'circle-stroke-width': 1,        // Optional: Set to 0 for inner circles if desired
+                        'circle-opacity': 0.30  // Low opacity
+                    }
+                });
+
+                // 2. Middle Circle (Medium radius, medium opacity)
+                map.addLayer({
+                    id: p.n + '-cL-middle', // Unique ID
                     type: 'circle',
                     source: p.n + '-c',
                     paint: {
-                        // CHANGE: Increased radius (multiplied by 4)
-                        'circle-radius': p.r * 1609.34 * 20, // 50 miles * conversion * 4
+                        'circle-radius': p.r * 1609.34 * 20, // 100 miles (50 * 2)
                         'circle-color': circleClr,
-                        'circle-stroke-color': pinColor,
-                        'circle-stroke-width': 1,
-                        // CHANGE: Decreased transparency (increased opacity from 0.5 to 0.75)
-                        'circle-opacity': 0.75
+                        'circle-stroke-width': 0, // No stroke for inner circles usually looks better
+                        'circle-opacity': 0.55 // Medium opacity (higher than outer)
                     }
                 });
+
+                // 3. Inner Circle (Base radius, highest opacity)
+                map.addLayer({
+                    id: p.n + '-cL-inner', // Unique ID
+                    type: 'circle',
+                    source: p.n + '-c',
+                    paint: {
+                        'circle-radius': p.r * 1609.34 * 10, // 50 miles (base radius)
+                        'circle-color': circleClr,
+                        'circle-stroke-width': 0, // No stroke
+                        'circle-opacity': 0.80 // High opacity (higher than middle)
+                    }
+                });
+                // --- END: Layered Circles ---
+
             });
         });
 
