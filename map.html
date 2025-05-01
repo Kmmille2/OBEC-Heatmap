@@ -13,6 +13,10 @@
             height: 100%;
             width: 100%;
         }
+        /* Optional: Style the navigation control if needed */
+        .mapboxgl-ctrl-top-right {
+            margin: 10px;
+        }
     </style>
 
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.11.1/mapbox-gl.css' rel='stylesheet' />
@@ -27,7 +31,7 @@
     <script>
         /* Wix / CSP worker fix - Point to LOCAL worker file */
         mapboxgl.workerUrl = 'mapbox-gl-csp-worker.js'; // Point to the local file
-        mapboxgl.workerCount = 2; // You might adjust this based on performance needs
+        mapboxgl.workerCount = 2;
 
         /* Public token */
         mapboxgl.accessToken =
@@ -42,10 +46,12 @@
             1, 'rgba(147,41,19,0.9)'     // mostly opaque rust
         ];
         const pinColor = '#932913'; // Rust color for pins and circle strokes
-        const circleClr = 'rgba(167,154,248,0.18)'; // Light lavender fill for circles
+        // Note: circleClr alpha value is less important now we use circle-opacity below
+        const circleClr = 'rgba(167,154,248,0.18)';
 
         /* Service hubs */
         const points = [
+             // CHANGE: Adjusted radius multiplier in circle layer below
             { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50, w: 1 },
             { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50, w: 1 },
             { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 50, w: 1 }
@@ -68,17 +74,18 @@
 
         /* Build the map */
         const map = new mapboxgl.Map({
-            container: 'map',                       // ID of the div element
-            // Note: Mapbox Standard style is now default in v3 if 'style' is omitted
-            // style: 'mapbox://styles/mapbox/light-v11', // Keeping light style explicitly
-            style: 'mapbox://styles/mapbox/standard', // Or try the default Standard style
-            center: [-76.5, 38.5],                  // Initial center [lng, lat]
-            zoom: 5,                                // Initial zoom level
-            attributionControl: false               // Hide default attribution if desired
+            container: 'map',
+            style: 'mapbox://styles/mapbox/standard', // Using Standard style
+            center: [-76.5, 38.5],
+            zoom: 5,
+            attributionControl: false // Keep default attribution hidden
         });
 
-        // Optional: Add standard Mapbox attribution control
+        // Optional: Add standard Mapbox attribution control if needed later
         // map.addControl(new mapboxgl.AttributionControl({ compact: true }));
+
+        // CHANGE: Add zoom and rotation controls to the map.
+        map.addControl(new mapboxgl.NavigationControl());
 
         map.on('load', () => {
             // Add the GeoJSON source for heatmap
@@ -92,21 +99,21 @@
                 id: 'heat',
                 type: 'heatmap',
                 source: 'hubs',
-                maxzoom: 9, // Hide heatmap when zoomed in closely
+                maxzoom: 9,
                 paint: {
                     'heatmap-weight': ['get', 'weight'],
                     'heatmap-color': heatGradient,
-                    'heatmap-radius': 60, // Adjust radius as needed
+                    'heatmap-radius': 60,
                     'heatmap-opacity': 0.8
                 }
-            }); // Removed placement relative to standard style
+            });
 
             // Add markers and circles for each service hub
             points.forEach(p => {
                 // Add a marker for the hub location
                 new mapboxgl.Marker({ color: pinColor })
                     .setLngLat([p.lng, p.lat])
-                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n)) // Show name on click
+                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n))
                     .addTo(map);
 
                 // Add a separate source for each circle
@@ -118,7 +125,6 @@
                             type: 'Point',
                             coordinates: [p.lng, p.lat]
                         }
-                        // Note: properties are not needed for the circle source itself
                     }
                 });
 
@@ -128,33 +134,17 @@
                     type: 'circle',
                     source: p.n + '-c',
                     paint: {
-                        // Use circle-radius in meters directly (Mapbox GL JS v3 handles scaling)
-                        'circle-radius': p.r * 1609.34, // Convert miles to meters
+                        // CHANGE: Increased radius (multiplied by 4)
+                        'circle-radius': p.r * 1609.34 * 4, // 50 miles * conversion * 4
                         'circle-color': circleClr,
                         'circle-stroke-color': pinColor,
                         'circle-stroke-width': 1,
-                        'circle-opacity': 0.5 // Added opacity for better visibility if circles overlap
+                        // CHANGE: Decreased transparency (increased opacity from 0.5 to 0.75)
+                        'circle-opacity': 0.75
                     }
-                }); // Removed placement relative to standard style
+                });
             });
-
-            // ---- Notes for Mapbox v3 ----
-            // 1. Mapbox Standard style is the default if `style` is omitted. It has different
-            //    layer IDs than older styles like 'light-v11'. If you need to place layers
-            //    relative to others using the `beforeId` parameter in `addLayer`, you'll
-            //    need to inspect the Standard style layers or use designated 'slots'.
-            //    For simplicity, `beforeId` has been removed in this version.
-            //
-            // 2. Circle radius calculation might differ slightly in v3's projection handling.
-            //    The direct conversion to meters should work well. Adjust `p.r * 1609.34`
-            //    if the visual size isn't exactly 50 miles.
-            //
-            // 3. The 'standard' style includes 3D terrain and buildings by default.
-            //    You can disable terrain via map options if not desired: `terrain: null`
         });
-
-        // Optional: Add zoom and rotation controls to the map.
-        // map.addControl(new mapboxgl.NavigationControl());
 
     </script>
 
