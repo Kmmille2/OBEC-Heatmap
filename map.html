@@ -13,6 +13,9 @@
             height: 100%;
             width: 100%;
         }
+        .mapboxgl-ctrl-top-right {
+            margin: 10px;
+        }
     </style>
 
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.11.1/mapbox-gl.css' rel='stylesheet' />
@@ -26,8 +29,8 @@
 
     <script>
         /* Wix / CSP worker fix - Point to LOCAL worker file */
-        mapboxgl.workerUrl = 'mapbox-gl-csp-worker.js'; // Point to the local file
-        mapboxgl.workerCount = 2; // You might adjust this based on performance needs
+        mapboxgl.workerUrl = 'mapbox-gl-csp-worker.js';
+        mapboxgl.workerCount = 2;
 
         /* Public token */
         mapboxgl.accessToken =
@@ -36,13 +39,14 @@
         /* Heatmap colours */
         const heatGradient = [
             'interpolate', ['linear'], ['heatmap-density'],
-            0, 'rgba(167,154,248,0)',    // transparent lavender
-            0.3, 'rgba(167,154,248,0.5)', // semi-transparent lavender
-            0.6, 'rgba(147,41,19,0.7)',   // semi-transparent rust
-            1, 'rgba(147,41,19,0.9)'     // mostly opaque rust
+            0, 'rgba(167,154,248,0)',
+            0.3, 'rgba(167,154,248,0.5)',
+            0.6, 'rgba(147,41,19,0.7)',
+            1, 'rgba(147,41,19,0.9)'
         ];
-        const pinColor = '#932913'; // Rust color for pins and circle strokes
-        const circleClr = 'rgba(167,154,248,0.18)'; // Light lavender fill for circles
+        const pinColor = '#932913';
+        // circleClr is no longer used
+        // const circleClr = 'rgba(167,154,248,0.18)';
 
         /* Service hubs */
         const points = [
@@ -61,55 +65,47 @@
                     coordinates: [p.lng, p.lat]
                 },
                 properties: {
-                    weight: p.w // Used for heatmap intensity
+                    weight: p.w
                 }
             }))
         };
 
         /* Build the map */
         const map = new mapboxgl.Map({
-            container: 'map',                       // ID of the div element
-            // Note: Mapbox Standard style is now default in v3 if 'style' is omitted
-            // style: 'mapbox://styles/mapbox/light-v11', // Keeping light style explicitly
-            style: 'mapbox://styles/mapbox/standard', // Or try the default Standard style
-            center: [-76.5, 38.5],                  // Initial center [lng, lat]
-            zoom: 5,                                // Initial zoom level
-            attributionControl: false               // Hide default attribution if desired
+            container: 'map',
+            style: 'mapbox://styles/mapbox/standard',
+            center: [-76.5, 38.5],
+            zoom: 5,
+            attributionControl: false
         });
 
-        // Optional: Add standard Mapbox attribution control
-        // map.addControl(new mapboxgl.AttributionControl({ compact: true }));
+        map.addControl(new mapboxgl.NavigationControl());
 
         map.on('load', () => {
-            // Add the GeoJSON source for heatmap
             map.addSource('hubs', {
                 type: 'geojson',
                 data: feat
             });
 
-            // Add the heatmap layer
             map.addLayer({
                 id: 'heat',
                 type: 'heatmap',
                 source: 'hubs',
-                maxzoom: 9, // Hide heatmap when zoomed in closely
+                maxzoom: 9,
                 paint: {
                     'heatmap-weight': ['get', 'weight'],
                     'heatmap-color': heatGradient,
-                    'heatmap-radius': 60, // Adjust radius as needed
+                    'heatmap-radius': 60,
                     'heatmap-opacity': 0.8
                 }
-            }); // Removed placement relative to standard style
+            });
 
-            // Add markers and circles for each service hub
             points.forEach(p => {
-                // Add a marker for the hub location
                 new mapboxgl.Marker({ color: pinColor })
                     .setLngLat([p.lng, p.lat])
-                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n)) // Show name on click
+                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n))
                     .addTo(map);
 
-                // Add a separate source for each circle
                 map.addSource(p.n + '-c', {
                     type: 'geojson',
                     data: {
@@ -118,43 +114,24 @@
                             type: 'Point',
                             coordinates: [p.lng, p.lat]
                         }
-                        // Note: properties are not needed for the circle source itself
                     }
                 });
 
-                // Add the circle layer for the service radius
+                //  --- CHANGED:  Single circle layer, using provided color ---
                 map.addLayer({
-                    id: p.n + '-cL',
+                    id: p.n + '-cL', // Single layer ID
                     type: 'circle',
                     source: p.n + '-c',
                     paint: {
-                        // Use circle-radius in meters directly (Mapbox GL JS v3 handles scaling)
-                        'circle-radius': p.r * 1609.34 * 5, // Convert miles to meters
-                        'circle-color': circleClr,
+                        'circle-radius': p.r * 1609.34 * 20, // Keep the larger radius
+                        // CHANGE: Setting the circle color to the provided rgb(130, 54, 27) with 50% opacity
+                        'circle-color': 'rgba(130, 54, 27, 0.5)',
                         'circle-stroke-color': pinColor,
-                        'circle-stroke-width': 1,
-                        'circle-opacity': 0.5 // Added opacity for better visibility if circles overlap
+                        'circle-stroke-width': 1
                     }
-                }); // Removed placement relative to standard style
+                });
             });
-
-            // ---- Notes for Mapbox v3 ----
-            // 1. Mapbox Standard style is the default if `style` is omitted. It has different
-            //    layer IDs than older styles like 'light-v11'. If you need to place layers
-            //    relative to others using the `beforeId` parameter in `addLayer`, you'll
-            //    need to inspect the Standard style layers or use designated 'slots'.
-            //    For simplicity, `beforeId` has been removed in this version.
-            //
-            // 2. Circle radius calculation might differ slightly in v3's projection handling.
-            //    The direct conversion to meters should work well. Adjust `p.r * 1609.34`
-            //    if the visual size isn't exactly 50 miles.
-            //
-            // 3. The 'standard' style includes 3D terrain and buildings by default.
-            //    You can disable terrain via map options if not desired: `terrain: null`
         });
-
-        // Optional: Add zoom and rotation controls to the map.
-        // map.addControl(new mapboxgl.NavigationControl());
 
     </script>
 
