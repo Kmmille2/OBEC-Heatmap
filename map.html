@@ -1,0 +1,91 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OBEC Coverage Map</title>
+<style>html,body,#map{margin:0;height:100%;width:100%}</style>
+
+<!-- Mapbox GL stylesheet -->
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl.css" rel="stylesheet">
+<!-- Mapbox GL script — deferred so it executes AFTER HTML is parsed -->
+<script defer src="https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl.js"></script>
+</head><body>
+
+<div id="map"></div>
+
+<!-- Your map code (runs only after every script has finished) -->
+<script>
+window.addEventListener('load', () => {
+
+  /* === Wix / CSP worker fix === */
+  mapboxgl.workerUrl   = 'https://api.mapbox.com/mapbox-gl-js/v2.16.0/mapbox-gl-csp-worker.js';
+  mapboxgl.workerCount = 2;
+
+  /* === Mapbox public token === */
+  mapboxgl.accessToken =
+    'pk.eyJ1Ijoia3lsZS1taWxsZXIiLCJhIjoiY21hNWVya2RzMGlycjJpbzl4OW1kaGtodiJ9.u5I5rSYZSB1pqdX7rjudQw';
+
+  /* === Colours & data === */
+  const heatGradient = [
+    'interpolate',['linear'],['heatmap-density'],
+    0,'rgba(167,154,248,0)',
+    .3,'rgba(167,154,248,.5)',
+    .6,'rgba(147,41,19,.7)',
+    1,'rgba(147,41,19,.9)'
+  ];
+  const pinColor='#932913', circleClr='rgba(167,154,248,.18)';
+
+  const points=[
+    {n:'East Windsor NJ',lat:40.267,lng:-74.525,r:50,w:1},
+    {n:'New Castle DE',  lat:39.687,lng:-75.586,r:50,w:1},
+    {n:'Wake Forest NC', lat:35.979,lng:-78.507,r:50,w:1}
+  ];
+  const feat={type:'FeatureCollection',features:points.map(p=>({
+    type:'Feature',
+    geometry:{type:'Point',coordinates:[p.lng,p.lat]},
+    properties:{weight:p.w}
+  }))};
+
+  /* === Build the map === */
+  const map=new mapboxgl.Map({
+    container:'map',
+    style:'mapbox://styles/mapbox/light-v11',
+    center:[-76.5,38.5],
+    zoom:5,
+    attributionControl:false
+  });
+
+  map.on('load',()=>{
+    map.addSource('hubs',{type:'geojson',data:feat});
+    map.addLayer({
+      id:'heat',type:'heatmap',source:'hubs',maxzoom:9,
+      paint:{
+        'heatmap-weight':['get','weight'],
+        'heatmap-color':heatGradient,
+        'heatmap-radius':60,
+        'heatmap-opacity':.8
+      }
+    });
+
+    /* pins + service circles */
+    points.forEach(p=>{
+      new mapboxgl.Marker({color:pinColor})
+        .setLngLat([p.lng,p.lat])
+        .setPopup(new mapboxgl.Popup({offset:25}).setText(p.n))
+        .addTo(map);
+
+      map.addSource(p.n+'c',{type:'geojson',
+        data:{type:'Feature',geometry:{type:'Point',coordinates:[p.lng,p.lat]}}
+      });
+      map.addLayer({
+        id:p.n+'cL',type:'circle',source:p.n+'c',paint:{
+          'circle-radius':{stops:[[0,0],[20,p.r*1609/2]],base:2},
+          'circle-color':circleClr,
+          'circle-stroke-color':pinColor,
+          'circle-stroke-width':1
+        }
+      });
+    });
+  });
+});
+</script>
+</body></html>
