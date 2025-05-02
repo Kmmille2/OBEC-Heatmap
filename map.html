@@ -45,30 +45,31 @@
             1, 'rgba(147,41,19,0.9)'
         ];
         const pinColor = '#932913';
-        const circleClr = 'rgba(167,154,248,0.18)'; // Light lavender fill for circles
+        // CHANGE: Increased base alpha slightly for visibility
+        const circleClr = 'rgba(167,154,248,0.3)'; // Base color, opacity adjusted below
 
-        /* Service hubs - Added new locations */
+        /* Service hubs - Adjusted radii for example */
         const points = [
-            // Original points (keeping r: 50 for now, adjust if needed)
-            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 150, w: 1 },
-            { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 150, w: 1 },
-            { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 250, w: 1 },
+            // CHANGE: Reduced radii for original points
+            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 100, w: 1 }, // Was 150
+            { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 100, w: 1 }, // Was 150
+            { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 150, w: 1 }, // Was 250
 
-            // New points (r: 200 miles) - Coordinates are approximate
-            { n: 'Baton Rouge LA',  lat: 30.475, lng: -91.183, r: 50, w: 1 }, // 2967 Lupine Ave
-            { n: 'Prairieville LA', lat: 30.307, lng: -90.941, r: 50, w: 1 }, // PO Box 1351 (Town Center)
-            { n: 'Denham Springs LA',lat: 30.488, lng: -90.955, r: 50, w: 1 }, // 7955 Hermitage Dr (Town Center approx)
-            { n: 'Gonzales LA',     lat: 30.239, lng: -90.920, r: 50, w: 1 }, // 40280 Cotton Field Ave (Town Center)
-            { n: 'Plaquemine LA',   lat: 30.298, lng: -91.242, r: 50, w: 1 }, // 25050 Crescent St (Town Center)
-            { n: 'Geismar LA',      lat: 30.222, lng: -91.052, r: 50, w: 1 }, // 5525 HWY 3115
-            { n: 'Buffalo NY',      lat: 42.869, lng: -78.841, r: 50, w: 1 }, // 20 Peabody St
-            { n: 'Mt Clemens MI',   lat: 42.598, lng: -82.881, r: 50, w: 1 }, // 400 N Groesbeck Hwy (Town Center approx)
-            { n: 'Front Royal VA',  lat: 38.918, lng: -78.194, r: 50, w: 1 }, // 7961 Winchester Rd (Town Center approx)
-            { n: 'Parlin NJ',       lat: 40.456, lng: -74.331, r: 50, w: 1 }, // 250 Cheesequake Rd
-            { n: 'Plainsboro NJ',   lat: 40.333, lng: -74.588, r: 50, w: 1 }, // 250 Plainsboro Rd (Town Center approx)
-            { n: 'Chehalis WA',     lat: 46.536, lng: -122.805,r: 50, w: 1 }, // 115 Klein Rd
-            { n: 'Newark NJ',       lat: 40.736, lng: -74.172, r: 50, w: 1 }, // 150 Firmenich Way (Town Center approx)
-            { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50, w: 1 }  // 7725 Traeleigh Lane (Town Center)
+            // Keeping others at 50 miles
+            { n: 'Baton Rouge LA',  lat: 30.475, lng: -91.183, r: 50, w: 1 },
+            { n: 'Prairieville LA', lat: 30.307, lng: -90.941, r: 50, w: 1 },
+            { n: 'Denham Springs LA',lat: 30.488, lng: -90.955, r: 50, w: 1 },
+            { n: 'Gonzales LA',     lat: 30.239, lng: -90.920, r: 50, w: 1 },
+            { n: 'Plaquemine LA',   lat: 30.298, lng: -91.242, r: 50, w: 1 },
+            { n: 'Geismar LA',      lat: 30.222, lng: -91.052, r: 50, w: 1 },
+            { n: 'Buffalo NY',      lat: 42.869, lng: -78.841, r: 50, w: 1 },
+            { n: 'Mt Clemens MI',   lat: 42.598, lng: -82.881, r: 50, w: 1 },
+            { n: 'Front Royal VA',  lat: 38.918, lng: -78.194, r: 50, w: 1 },
+            { n: 'Parlin NJ',       lat: 40.456, lng: -74.331, r: 50, w: 1 },
+            { n: 'Plainsboro NJ',   lat: 40.333, lng: -74.588, r: 50, w: 1 },
+            { n: 'Chehalis WA',     lat: 46.536, lng: -122.805,r: 50, w: 1 },
+            { n: 'Newark NJ',       lat: 40.736, lng: -74.172, r: 50, w: 1 },
+            { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50, w: 1 }
         ];
 
         // Convert points array to GeoJSON FeatureCollection for Mapbox sources
@@ -103,7 +104,6 @@
                 data: feat
             });
 
-            // NOTE: Heatmap will now cover a much larger area
             map.addLayer({
                 id: 'heat',
                 type: 'heatmap',
@@ -135,7 +135,6 @@
                 });
 
                 // Add the circle layer for the service radius (one per point)
-                // NOTE: With many points having r: 200, expect significant overlap!
                 map.addLayer({
                     id: p.n + '-cL', // Unique ID per point's circle
                     type: 'circle',
@@ -143,10 +142,11 @@
                     paint: {
                         // Uses the 'r' value from each point object (in miles)
                         'circle-radius': p.r * 1609.34, // Convert miles (p.r) to meters
-                        'circle-color': circleClr,
+                        'circle-color': circleClr, // Base color
                         'circle-stroke-color': pinColor,
                         'circle-stroke-width': 1,
-                        'circle-opacity': 0.5 // Adjust as needed
+                        // CHANGE: Increased layer opacity for better visibility
+                        'circle-opacity': 0.7 // Was 0.5
                     }
                 });
             });
