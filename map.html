@@ -36,26 +36,24 @@
         mapboxgl.accessToken =
             'pk.eyJ1Ijoia3lsZS1taWxsZXIiLCJhIjoiY21hNWVya2RzMGlycjJpbzl4OW1kaGtodiJ9.u5I5rSYZSB1pqdX7rjudQw';
 
-        /* Heatmap colours */
-        const heatGradient = [
-            'interpolate', ['linear'], ['heatmap-density'],
-            0, 'rgba(167,154,248,0)',
-            0.3, 'rgba(167,154,248,0.5)',
-            0.6, 'rgba(147,41,19,0.7)',
-            1, 'rgba(147,41,19,0.9)'
-        ];
+        /* Heatmap colours - Not currently used as heatmap layer is commented out */
+        // const heatGradient = [
+        //     'interpolate', ['linear'], ['heatmap-density'],
+        //     0, 'rgba(167,154,248,0)',
+        //     0.3, 'rgba(167,154,248,0.5)',
+        //     0.6, 'rgba(147,41,19,0.7)',
+        //     1, 'rgba(147,41,19,0.9)'
+        // ];
         const pinColor = '#932913';
-        // CHANGE: Increased base alpha slightly for visibility
-        const circleClr = 'rgba(167,154,248,0.3)'; // Base color, opacity adjusted below
+        // CHANGE: Adjusted circle color alpha for better visibility
+        const circleClr = 'rgba(167,154,248,0.4)'; // Base color, opacity adjusted below
 
-        /* Service hubs - Adjusted radii for example */
+        /* Service hubs - Radii reset to 50 for baseline */
         const points = [
-            // CHANGE: Reduced radii for original points
-            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 100, w: 1 }, // Was 150
-            { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 100, w: 1 }, // Was 150
-            { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 150, w: 1 }, // Was 250
-
-            // Keeping others at 50 miles
+            // CHANGE: Reset all radii to 50 for initial clarity
+            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50, w: 1 },
+            { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50, w: 1 },
+            { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 50, w: 1 },
             { n: 'Baton Rouge LA',  lat: 30.475, lng: -91.183, r: 50, w: 1 },
             { n: 'Prairieville LA', lat: 30.307, lng: -90.941, r: 50, w: 1 },
             { n: 'Denham Springs LA',lat: 30.488, lng: -90.955, r: 50, w: 1 },
@@ -72,7 +70,7 @@
             { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50, w: 1 }
         ];
 
-        // Convert points array to GeoJSON FeatureCollection for Mapbox sources
+        // Convert points array to GeoJSON FeatureCollection (used only for circles now)
         const feat = {
             type: 'FeatureCollection',
             features: points.map(p => ({
@@ -81,13 +79,15 @@
                     type: 'Point',
                     coordinates: [p.lng, p.lat]
                 },
+                // Properties are not strictly needed for circles, but harmless
                 properties: {
-                    weight: p.w
+                    weight: p.w,
+                    radius_miles: p.r // Optional: include radius in properties if useful later
                 }
             }))
         };
 
-        /* Build the map - Adjusted center/zoom */
+        /* Build the map */
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/standard',
@@ -99,7 +99,9 @@
         map.addControl(new mapboxgl.NavigationControl());
 
         map.on('load', () => {
-            map.addSource('hubs', {
+            // --- CHANGE: Heatmap Layer COMMENTED OUT ---
+            /*
+            map.addSource('hubs', { // Source for heatmap
                 type: 'geojson',
                 data: feat
             });
@@ -116,6 +118,9 @@
                     'heatmap-opacity': 0.8
                 }
             });
+            */
+            // --- END Heatmap Layer ---
+
 
             points.forEach(p => {
                 new mapboxgl.Marker({ color: pinColor })
@@ -123,7 +128,8 @@
                     .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n))
                     .addTo(map);
 
-                map.addSource(p.n + '-c', { // Unique source for each point
+                // Unique source for each point's circle
+                map.addSource(p.n + '-c', {
                     type: 'geojson',
                     data: {
                         type: 'Feature',
@@ -140,13 +146,13 @@
                     type: 'circle',
                     source: p.n + '-c', // Use the source specific to this point
                     paint: {
-                        // Uses the 'r' value from each point object (in miles)
+                        // Uses the 'r' value (now 50 for all) from each point object
                         'circle-radius': p.r * 1609.34, // Convert miles (p.r) to meters
-                        'circle-color': circleClr, // Base color
+                        'circle-color': circleClr, // Base color (alpha adjusted above)
                         'circle-stroke-color': pinColor,
                         'circle-stroke-width': 1,
-                        // CHANGE: Increased layer opacity for better visibility
-                        'circle-opacity': 0.7 // Was 0.5
+                        // CHANGE: Adjusted layer opacity
+                        'circle-opacity': 0.6 // Was 0.7, effective opacity now 0.4*0.6=0.24
                     }
                 });
             });
