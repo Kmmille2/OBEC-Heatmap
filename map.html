@@ -39,9 +39,7 @@
         /* Color for pins */
         const pinColor = '#932913';
 
-        /* --- circleClr variable removed --- */
-
-        /* Service hubs - Reduced list (r value is not used visually now) */
+        /* Service hubs - Reduced list */
         const points = [
             { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50 },
             { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50 },
@@ -55,12 +53,15 @@
             { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50 }
         ];
 
-        /* Build the map */
+        /* Build the map - Adjusted center, zoom, pitch, bearing */
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/standard',
-            center: [-88, 38],  // Adjusted map center
-            zoom: 3.0,          // Adjusted zoom level
+            // CHANGE: Updated initial view settings
+            center: [-90, 39],  // Estimated center longitude, latitude
+            zoom: 3.3,          // Estimated zoom level
+            pitch: 40,          // Estimated tilt in degrees
+            bearing: 0,           // Estimated rotation (0 = North up)
             attributionControl: false
         });
 
@@ -70,6 +71,7 @@
         map.on('load', () => {
 
             /* --- Heatmap code remains removed --- */
+            /* --- Circle code remains removed --- */
 
             // Add markers for each service hub
             points.forEach(p => {
@@ -78,25 +80,6 @@
                     .setLngLat([p.lng, p.lat])
                     .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n))
                     .addTo(map);
-
-                // --- Circle Source and Layer Removed ---
-                /*
-                // Add a separate source for each circle
-                map.addSource(p.n + '-c', {
-                    type: 'geojson',
-                    data: { // ...etc... }
-                });
-
-                // Add the circle layer for the service radius
-                map.addLayer({
-                    id: p.n + '-cL',
-                    type: 'circle',
-                    source: p.n + '-c',
-                    paint: { // ...etc... }
-                });
-                */
-                // --- END Circle Source and Layer Removed ---
-
             });
         });
 
