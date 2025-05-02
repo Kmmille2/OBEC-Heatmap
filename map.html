@@ -13,6 +13,9 @@
             height: 100%;
             width: 100%;
         }
+        .mapboxgl-ctrl-top-right {
+            margin: 10px; /* Example margin for controls */
+        }
     </style>
 
     <link href='https://api.mapbox.com/mapbox-gl-js/v3.11.1/mapbox-gl.css' rel='stylesheet' />
@@ -26,102 +29,56 @@
 
     <script>
         /* Wix / CSP worker fix - Point to LOCAL worker file */
-        mapboxgl.workerUrl = 'mapbox-gl-csp-worker.js'; // Point to the local file
-        mapboxgl.workerCount = 2; // You might adjust this based on performance needs
+        mapboxgl.workerUrl = 'mapbox-gl-csp-worker.js';
+        mapboxgl.workerCount = 2;
 
         /* Public token */
         mapboxgl.accessToken =
             'pk.eyJ1Ijoia3lsZS1taWxsZXIiLCJhIjoiY21hNWVya2RzMGlycjJpbzl4OW1kaGtodiJ9.u5I5rSYZSB1pqdX7rjudQw';
 
-        /* Heatmap colours */
-        const heatGradient = [
-            'interpolate', ['linear'], ['heatmap-density'],
-            0, 'rgba(167,154,248,0)',    // transparent lavender
-            0.3, 'rgba(167,154,248,0.5)', // semi-transparent lavender
-            0.6, 'rgba(147,41,19,0.7)',   // semi-transparent rust
-            1, 'rgba(147,41,19,0.9)'     // mostly opaque rust
-        ];
+        /* --- Heatmap code entirely removed --- */
+
         const pinColor = '#932913'; // Rust color for pins and circle strokes
         const circleClr = 'rgba(167,154,248,0.18)'; // Light lavender fill for circles
 
-        /* Service hubs */
+        /* Service hubs - Reduced list */
         const points = [
-            // CHANGE: Reset all radii to 50 for initial clarity
-            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50, w: 1 },
-            { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50, w: 1 },
-            { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 50, w: 1 },
-            { n: 'Baton Rouge LA',  lat: 30.475, lng: -91.183, r: 50, w: 1 },
-            { n: 'Prairieville LA', lat: 30.307, lng: -90.941, r: 50, w: 1 },
-            { n: 'Denham Springs LA',lat: 30.488, lng: -90.955, r: 50, w: 1 },
-            { n: 'Gonzales LA',     lat: 30.239, lng: -90.920, r: 50, w: 1 },
-            { n: 'Plaquemine LA',   lat: 30.298, lng: -91.242, r: 50, w: 1 },
-            { n: 'Geismar LA',      lat: 30.222, lng: -91.052, r: 50, w: 1 },
-            { n: 'Buffalo NY',      lat: 42.869, lng: -78.841, r: 50, w: 1 },
-            { n: 'Mt Clemens MI',   lat: 42.598, lng: -82.881, r: 50, w: 1 },
-            { n: 'Front Royal VA',  lat: 38.918, lng: -78.194, r: 50, w: 1 },
-            { n: 'Parlin NJ',       lat: 40.456, lng: -74.331, r: 50, w: 1 },
-            { n: 'Plainsboro NJ',   lat: 40.333, lng: -74.588, r: 50, w: 1 },
-            { n: 'Chehalis WA',     lat: 46.536, lng: -122.805,r: 50, w: 1 },
-            { n: 'Newark NJ',       lat: 40.736, lng: -74.172, r: 50, w: 1 },
-            { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50, w: 1 }
+            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50 }, // Removed w: 1
+            { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50 },
+            { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 50 },
+            { n: 'Baton Rouge LA',  lat: 30.475, lng: -91.183, r: 50 },
+            { n: 'Buffalo NY',      lat: 42.869, lng: -78.841, r: 50 },
+            { n: 'Mt Clemens MI',   lat: 42.598, lng: -82.881, r: 50 },
+            { n: 'Front Royal VA',  lat: 38.918, lng: -78.194, r: 50 },
+            { n: 'Chehalis WA',     lat: 46.536, lng: -122.805,r: 50 },
+            { n: 'Newark NJ',       lat: 40.736, lng: -74.172, r: 50 },
+            { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50 }
         ];
 
-        // Convert points array to GeoJSON FeatureCollection for Mapbox sources
-        const feat = {
-            type: 'FeatureCollection',
-            features: points.map(p => ({
-                type: 'Feature',
-                geometry: {
-                    type: 'Point',
-                    coordinates: [p.lng, p.lat]
-                },
-                properties: {
-                    weight: p.w // Used for heatmap intensity
-                }
-            }))
-        };
+        /* --- GeoJSON 'feat' constant removed (was only for heatmap) --- */
 
-        /* Build the map */
+        /* Build the map - Adjusted center and zoom */
         const map = new mapboxgl.Map({
-            container: 'map',                       // ID of the div element
-            // Note: Mapbox Standard style is now default in v3 if 'style' is omitted
-            // style: 'mapbox://styles/mapbox/light-v11', // Keeping light style explicitly
-            style: 'mapbox://styles/mapbox/standard', // Or try the default Standard style
-            center: [-76.5, 38.5],                  // Initial center [lng, lat]
-            zoom: 5,                                // Initial zoom level
-            attributionControl: false               // Hide default attribution if desired
+            container: 'map',
+            style: 'mapbox://styles/mapbox/standard',
+            center: [-88, 38],  // Adjusted map center for new points
+            zoom: 3.0,          // Adjusted zoom level (further out)
+            attributionControl: false
         });
 
-        // Optional: Add standard Mapbox attribution control
-        // map.addControl(new mapboxgl.AttributionControl({ compact: true }));
+        // Add navigation controls (zoom/rotate)
+        map.addControl(new mapboxgl.NavigationControl());
 
         map.on('load', () => {
-            // Add the GeoJSON source for heatmap
-            map.addSource('hubs', {
-                type: 'geojson',
-                data: feat
-            });
 
-            // Add the heatmap layer
-            map.addLayer({
-                id: 'heat',
-                type: 'heatmap',
-                source: 'hubs',
-                maxzoom: 9, // Hide heatmap when zoomed in closely
-                paint: {
-                    'heatmap-weight': ['get', 'weight'],
-                    'heatmap-color': heatGradient,
-                    'heatmap-radius': 20, // Adjust radius as needed
-                    'heatmap-opacity': 0.4
-                }
-            }); // Removed placement relative to standard style
+            /* --- Heatmap source and layer adding code removed --- */
 
             // Add markers and circles for each service hub
             points.forEach(p => {
                 // Add a marker for the hub location
                 new mapboxgl.Marker({ color: pinColor })
                     .setLngLat([p.lng, p.lat])
-                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n)) // Show name on click
+                    .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n))
                     .addTo(map);
 
                 // Add a separate source for each circle
@@ -133,7 +90,6 @@
                             type: 'Point',
                             coordinates: [p.lng, p.lat]
                         }
-                        // Note: properties are not needed for the circle source itself
                     }
                 });
 
@@ -143,33 +99,16 @@
                     type: 'circle',
                     source: p.n + '-c',
                     paint: {
-                        // Use circle-radius in meters directly (Mapbox GL JS v3 handles scaling)
-                        'circle-radius': p.r * 1609.34, // Convert miles to meters
+                        // Uses the 'r' value (50) from each point object
+                        'circle-radius': p.r * 1609.34, // Convert miles (p.r) to meters
                         'circle-color': circleClr,
                         'circle-stroke-color': pinColor,
                         'circle-stroke-width': 1,
-                        'circle-opacity': 0.4 // Added opacity for better visibility if circles overlap
+                        'circle-opacity': 0.4 // Opacity set in your last version
                     }
-                }); // Removed placement relative to standard style
+                });
             });
-
-            // ---- Notes for Mapbox v3 ----
-            // 1. Mapbox Standard style is the default if `style` is omitted. It has different
-            //    layer IDs than older styles like 'light-v11'. If you need to place layers
-            //    relative to others using the `beforeId` parameter in `addLayer`, you'll
-            //    need to inspect the Standard style layers or use designated 'slots'.
-            //    For simplicity, `beforeId` has been removed in this version.
-            //
-            // 2. Circle radius calculation might differ slightly in v3's projection handling.
-            //    The direct conversion to meters should work well. Adjust `p.r * 1609.34`
-            //    if the visual size isn't exactly 50 miles.
-            //
-            // 3. The 'standard' style includes 3D terrain and buildings by default.
-            //    You can disable terrain via map options if not desired: `terrain: null`
         });
-
-        // Optional: Add zoom and rotation controls to the map.
-        // map.addControl(new mapboxgl.NavigationControl());
 
     </script>
 
