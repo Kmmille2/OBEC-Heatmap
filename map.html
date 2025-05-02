@@ -36,14 +36,14 @@
         mapboxgl.accessToken =
             'pk.eyJ1Ijoia3lsZS1taWxsZXIiLCJhIjoiY21hNWVya2RzMGlycjJpbzl4OW1kaGtodiJ9.u5I5rSYZSB1pqdX7rjudQw';
 
-        /* --- Heatmap code entirely removed --- */
+        /* Color for pins */
+        const pinColor = '#932913';
 
-        const pinColor = '#932913'; // Rust color for pins and circle strokes
-        const circleClr = 'rgba(167,154,248,0.18)'; // Light lavender fill for circles
+        /* --- circleClr variable removed --- */
 
-        /* Service hubs - Reduced list */
+        /* Service hubs - Reduced list (r value is not used visually now) */
         const points = [
-            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50 }, // Removed w: 1
+            { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50 },
             { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50 },
             { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 50 },
             { n: 'Baton Rouge LA',  lat: 30.475, lng: -91.183, r: 50 },
@@ -55,14 +55,12 @@
             { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50 }
         ];
 
-        /* --- GeoJSON 'feat' constant removed (was only for heatmap) --- */
-
-        /* Build the map - Adjusted center and zoom */
+        /* Build the map */
         const map = new mapboxgl.Map({
             container: 'map',
             style: 'mapbox://styles/mapbox/standard',
-            center: [-88, 38],  // Adjusted map center for new points
-            zoom: 3.0,          // Adjusted zoom level (further out)
+            center: [-88, 38],  // Adjusted map center
+            zoom: 3.0,          // Adjusted zoom level
             attributionControl: false
         });
 
@@ -71,9 +69,9 @@
 
         map.on('load', () => {
 
-            /* --- Heatmap source and layer adding code removed --- */
+            /* --- Heatmap code remains removed --- */
 
-            // Add markers and circles for each service hub
+            // Add markers for each service hub
             points.forEach(p => {
                 // Add a marker for the hub location
                 new mapboxgl.Marker({ color: pinColor })
@@ -81,16 +79,12 @@
                     .setPopup(new mapboxgl.Popup({ offset: 25 }).setText(p.n))
                     .addTo(map);
 
+                // --- Circle Source and Layer Removed ---
+                /*
                 // Add a separate source for each circle
                 map.addSource(p.n + '-c', {
                     type: 'geojson',
-                    data: {
-                        type: 'Feature',
-                        geometry: {
-                            type: 'Point',
-                            coordinates: [p.lng, p.lat]
-                        }
-                    }
+                    data: { // ...etc... }
                 });
 
                 // Add the circle layer for the service radius
@@ -98,15 +92,11 @@
                     id: p.n + '-cL',
                     type: 'circle',
                     source: p.n + '-c',
-                    paint: {
-                        // Uses the 'r' value (50) from each point object
-                        'circle-radius': p.r * 1609.34, // Convert miles (p.r) to meters
-                        'circle-color': circleClr,
-                        'circle-stroke-color': pinColor,
-                        'circle-stroke-width': 1,
-                        'circle-opacity': 0.4 // Opacity set in your last version
-                    }
+                    paint: { // ...etc... }
                 });
+                */
+                // --- END Circle Source and Layer Removed ---
+
             });
         });
 
