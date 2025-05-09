@@ -39,20 +39,47 @@
         /* Color for pins */
         const pinColor = '#932913';
 
-        /* Service hubs - Reduced list */
+        /* Service hubs - Expanded and merged list */
         const points = [
+            // Original 10 (duplicates with new list handled below)
             { n: 'East Windsor NJ', lat: 40.267, lng: -74.525, r: 50 },
             { n: 'New Castle DE',   lat: 39.687, lng: -75.586, r: 50 },
             { n: 'Wake Forest NC',  lat: 35.979, lng: -78.507, r: 50 },
-            { n: 'Baton Rouge LA',  lat: 30.475, lng: -91.183, r: 50 },
-            { n: 'Buffalo NY',      lat: 42.869, lng: -78.841, r: 50 },
+            { n: 'Baton Rouge LA',  lat: 30.475, lng: -91.183, r: 50 }, // Also in new list
+            { n: 'Buffalo NY',      lat: 42.869, lng: -78.841, r: 50 }, // Also in new list
             { n: 'Mt Clemens MI',   lat: 42.598, lng: -82.881, r: 50 },
-            { n: 'Front Royal VA',  lat: 38.918, lng: -78.194, r: 50 },
+            { n: 'Front Royal VA',  lat: 38.918, lng: -78.194, r: 50 }, // Also in new list
             { n: 'Chehalis WA',     lat: 46.536, lng: -122.805,r: 50 },
             { n: 'Newark NJ',       lat: 40.736, lng: -74.172, r: 50 },
-            { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50 }
-        ];
+            { n: 'Charlotte Hall MD',lat: 38.498, lng: -76.780, r: 50 },
 
+            // Newly added locations (duplicates from above are omitted here)
+            { n: 'Penns Grove, NJ', lat: 39.727, lng: -75.468, r: 50 },
+            { n: 'Bridgewater, NJ', lat: 40.590, lng: -74.638, r: 50 },
+            { n: 'Detroit, MI',     lat: 42.331, lng: -83.046, r: 50 },
+            { n: 'Columbus, OH',    lat: 39.961, lng: -82.999, r: 50 },
+            { n: 'San Diego, CA',   lat: 32.716, lng: -117.161,r: 50 },
+            { n: 'Sacramento, CA',  lat: 38.582, lng: -121.494,r: 50 },
+            { n: 'Colorado Springs, CO', lat: 38.834, lng: -104.821,r: 50 },
+            { n: 'Hometown, PA',    lat: 40.830, lng: -75.980, r: 50 }, // Approx.
+            { n: 'Lorain, OH',      lat: 41.453, lng: -82.184, r: 50 },
+            { n: 'Columbia, MO',    lat: 38.952, lng: -92.334, r: 50 },
+            { n: 'Altamira, Mexico',lat: 22.397, lng: -97.944, r: 50 },
+            { n: 'Richmond, VA',    lat: 37.541, lng: -77.436, r: 50 },
+            { n: 'Seattle, WA',     lat: 47.606, lng: -122.332,r: 50 },
+            { n: 'Birmingham, AL',  lat: 33.521, lng: -86.802, r: 50 },
+            { n: 'New Johnsonville, TN', lat: 36.019, lng: -87.970, r: 50 },
+            { n: 'Belle Chasse, LA',lat: 29.854, lng: -90.004, r: 50 }, // Used for "Belle, MS" - assuming Belle Chasse, LA
+            { n: 'Charleston, SC',  lat: 32.776, lng: -79.931, r: 50 },
+            { n: 'Parkersburg, WV', lat: 39.267, lng: -81.562, r: 50 },
+            { n: 'Orange, TX',      lat: 30.092, lng: -93.736, r: 50 },
+            { n: 'Allentown, PA',   lat: 40.608, lng: -75.490, r: 50 },
+            { n: 'New Orleans, LA', lat: 29.951, lng: -90.072, r: 50 },
+            { n: 'Izmit, Turkey',   lat: 40.765, lng: 29.940,  r: 50 },
+            { n: 'Bismarck, ND',    lat: 46.808, lng: -100.784,r: 50 },
+            { n: 'Hilo, HI',        lat: 19.730, lng: -155.090,r: 50 },
+            { n: 'Queens, NY',      lat: 40.728, lng: -73.795, r: 50 }
+        ];
         /* Build the map - Adjusted center, zoom, pitch, bearing */
         const map = new mapboxgl.Map({
             container: 'map',
